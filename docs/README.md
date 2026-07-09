@@ -35,5 +35,5 @@ detail.
 | 2 | [First API](step-2-first-api.md) | Routes, JSON, Pydantic validation, status codes |
 | 3 | [First React Page](step-3-first-react-page.md) | Components, state, fetching, CORS |
 | 4 | [A Database](step-4-a-database.md) | Persistence, SQLModel, CRUD |
-| 5 | *The Real App* (coming) | Relationships, forms, detail views |
+| 5 | [The Real App](step-5-the-real-app.md) | Relationships, forms, detail views |
 | 6 | *Grown-up Concepts* (coming) | Auth, structure, migration |

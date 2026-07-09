@@ -139,4 +139,4 @@ def delete_contact(contact_id: int):
 - Gitignore the DB file (`*.db`) — it's data/artifact, like `.venv`.
 
 ---
-**← [Step 3](step-3-first-react-page.md) · Next → Step 5 (coming): The Real App**
+**← [Step 3](step-3-first-react-page.md) · Next → [Step 5 — The Real App](step-5-the-real-app.md)**
