@@ -34,6 +34,6 @@ detail.
 | 1 | [Setup & Hello World](step-1-setup-and-hello-world.md) | The two-process model; project structure |
 | 2 | [First API](step-2-first-api.md) | Routes, JSON, Pydantic validation, status codes |
 | 3 | [First React Page](step-3-first-react-page.md) | Components, state, fetching, CORS |
-| 4 | *A Database* (coming) | Persistence, SQLModel, CRUD |
+| 4 | [A Database](step-4-a-database.md) | Persistence, SQLModel, CRUD |
 | 5 | *The Real App* (coming) | Relationships, forms, detail views |
 | 6 | *Grown-up Concepts* (coming) | Auth, structure, migration |

@@ -8,8 +8,8 @@
 ```
    STATE (your data)        COMPONENT            WHAT YOU SEE
    ┌────────────┐         (a function)          ┌───────────────┐
-   │ contacts=[]│ ────────►  App()  ───────────►│  (empty list)  │
-   └────────────┘                                └───────────────┘
+   │ contacts=[]│ ────────►  App()  ───────────►│  (empty list) │
+   └────────────┘                               └───────────────┘
          ▲                                               │
          │        setContacts([...])         data arrives│
          └───────────────────────────────────────────────┘
@@ -121,4 +121,4 @@ app.add_middleware(
 - React **StrictMode** runs effects **twice** in dev (a bug-surfacing aid; harmless).
 
 ---
-**← [Step 2](step-2-first-api.md) · Next → Step 4 (coming): A Database**
+**← [Step 2](step-2-first-api.md) · Next → [Step 4 — A Database](step-4-a-database.md)**
