@@ -11,8 +11,8 @@ development — backend-first, one concept at a time, code written by hand.
 
 ## 📍 You are here
 
-**Step 2 of 6 ✅ done — First API**   →   next up: **Step 3 — First React Page**
-`▰▰▱▱▱▱`  ·  backend now serves validated JSON · frontend is still the Vite starter
+**Step 3 of 6 ✅ done — First React Page**   →   next up: **Step 4 — A Database**
+`▰▰▰▱▱▱`  ·  **halfway!** · frontend fetches & renders live data from the API
 
 ---
 
@@ -34,7 +34,8 @@ development — backend-first, one concept at a time, code written by hand.
    └───────────┘                             └──────────────────┘
 ```
 
-Frontend = the looks. Backend = the brains & memory. They talk over **HTTP**.
+Frontend = the looks. Backend = the brains & memory. They talk over **HTTP** (and the
+browser guards cross-origin calls with **CORS**).
 
 ---
 
@@ -64,19 +65,15 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 │
 ├── backend/                  ← self-contained PYTHON project
 │   ├── pyproject.toml        ← backend deps & metadata
-│   ├── uv.lock               ← exact pinned versions
-│   ├── .python-version       ← pins Python 3.14
-│   ├── .venv/                ← installed deps (gitignored, disposable)
-│   ├── .gitignore            ← Python ignores
+│   ├── uv.lock  .python-version  .venv/  .gitignore
 │   └── app/                  ← the application PACKAGE
-│       ├── __init__.py       ← marks app/ as an importable package
-│       └── main.py           ← the FastAPI app + endpoints
+│       ├── __init__.py
+│       └── main.py           ← FastAPI app, models, endpoints, CORS
 │
 └── frontend/                 ← self-contained JS project
-    ├── package.json          ← frontend deps & metadata
-    ├── node_modules/         ← installed deps (gitignored, disposable)
-    ├── .gitignore            ← Node ignores
-    └── src/                  ← React components live here
+    ├── package.json  node_modules/  .gitignore
+    └── src/
+        └── App.jsx           ← your React component
 ```
 
 > Each half owns its deps and its `.gitignore`, and each can be **run, tested, and
@@ -102,9 +99,6 @@ npm run dev
 ```
 → http://localhost:5173
 
-> `app.main:app` = the **`app/`** package → its **`main.py`** module → the FastAPI
-> object named **`app`** inside it. (Yes — "app" means two different things there!)
-
 ---
 
 ## 🎯 Roadmap
@@ -112,36 +106,30 @@ npm run dev
 ### Step 1 — Setup & Hello World  ·  *client–server model*  ✅
 - [x] Confirm the stack & the build target
 - [x] Understand the two-process (client–server) model
-- [x] Backend: install FastAPI + Uvicorn
-- [x] Backend: write the hello-world endpoint (`backend/app/main.py`)
-- [x] Backend: server runs — JSON at `/`, auto-docs at `/docs`
+- [x] Backend: install FastAPI + Uvicorn; write & run the hello-world endpoint
 - [x] Adopt the standard project layout (`app/` package, self-contained subprojects)
-- [x] Frontend: scaffold the React app with Vite
-- [x] Frontend: install dependencies (`npm install`)
-- [x] Frontend: dev server runs — starter page + counter at `:5173`
+- [x] Frontend: scaffold with Vite; dev server runs at `:5173`
 - [x] 💾 commit: *"Step 1: FastAPI + React hello world"*
 
 ### Step 2 — First API  ·  *routes, JSON & Pydantic*  ✅
-- [x] Routes & HTTP methods; the CRUD ↔ verb map
-- [x] REST: URLs name *things* (`/contacts`, `/contacts/{id}`)
+- [x] Routes & HTTP methods; the CRUD ↔ verb map; REST resource URLs
 - [x] What JSON really is (text; serialize / parse; vs. Python dict)
-- [x] Return a list of contacts as JSON
-- [x] Define a `Contact` Pydantic model — the data "blueprint"
+- [x] Return contacts as JSON; define a `Contact` Pydantic model
 - [x] FastAPI reads type hints → validates output **and** input
-- [x] Read errors: browser `500` vs. the real message in the server log
-- [x] HTTP status codes: 2xx / 4xx / 5xx (`200`, `404`, `422`, `500`)
+- [x] HTTP status codes (200 / 404 / 422 / 500); read errors in the server log
 - [x] Path parameters + the get-or-404 pattern (`HTTPException`)
 - [x] 💾 commit: *"Step 2: contacts API with Pydantic validation"*
 
-### Step 3 — First React Page  ·  new idea: *UI = f(state)*
-- [ ] Learn: components & JSX
-- [ ] Learn: `useState` and "UI is a function of state"
-- [ ] Fetch the contacts with `fetch()`
-- [ ] Learn: `useEffect` & the request lifecycle
-- [ ] Hit (and understand!) **CORS** — the cross-origin block
-- [ ] Handle loading & error states
-- [ ] Render the list on the page
-- [ ] 💾 commit
+### Step 3 — First React Page  ·  *UI = f(state)*  ✅
+- [x] Components & JSX; one root element; `{ }` to drop JS into markup
+- [x] Render a list with `.map()` + `key`
+- [x] `useState` — reactive data; the "UI = f(state)" idea
+- [x] `useEffect(…, [])` — run a side effect once, after render
+- [x] `fetch()` the API; Promises & `.then` / `.catch` / `.finally`
+- [x] Same-origin policy & **CORS**; fix with FastAPI `CORSMiddleware`
+- [x] The three states of a fetch: **loading / error / success**
+- [x] The fetch footgun: it doesn't reject on 4xx/5xx — check `response.ok`
+- [x] 💾 commit: *"Step 3: React page fetching and rendering contacts"*
 
 ### Step 4 — A Database  ·  new idea: *persistence & CRUD*
 - [ ] Learn: what a database is; SQLite = a file
@@ -149,7 +137,7 @@ npm run dev
 - [ ] Create the DB and the `contacts` table
 - [ ] Implement **C**reate + **R**ead endpoints
 - [ ] Implement **U**pdate + **D**elete endpoints
-- [ ] Learn: path params for `/contacts/{id}` against real data
+- [ ] Swap the hardcoded list for real DB queries
 - [ ] Test full CRUD via `/docs`
 - [ ] 💾 commit
 
@@ -175,27 +163,24 @@ npm run dev
 ## 🧠 Concepts unlocked
 
 **Unlocked so far:**
-- [x] Client–server model; HTTP request/response
-- [x] `localhost` & ports (`:8000` backend, `:5173` frontend)
-- [x] Server vs app: **Uvicorn** (the server) runs **FastAPI** (the app)
-- [x] Auto-generated interactive API docs (`/docs`)
-- [x] How `uv` finds a project (searches *upward*) & how Python imports resolve
+- [x] Client–server model; HTTP request/response; `localhost` & ports
+- [x] Server vs app: **Uvicorn** (server) runs **FastAPI** (app); auto-docs at `/docs`
+- [x] How `uv` finds a project & how Python imports resolve
 - [x] Standard layout: self-contained subprojects; app code in a package (`app/`)
 - [x] Two-language repo: `.venv` vs `node_modules`; per-subproject `.gitignore`
-- [x] HTTP methods & the CRUD map
-- [x] REST: resource-oriented URLs (`/contacts`, `/contacts/{id}`)
+- [x] HTTP methods & the CRUD map; REST resource URLs
 - [x] JSON: a *text* format; serialize (Python→JSON) / parse (JSON→objects)
-- [x] Pydantic models & response validation
-- [x] FastAPI reads type hints → validates **input and output**
-- [x] Path parameters
+- [x] Pydantic models; FastAPI validates **input and output** from type hints
+- [x] Path parameters; the get-or-404 pattern (`HTTPException`)
 - [x] HTTP status codes (2xx / 4xx / 5xx)
-- [x] The get-or-404 pattern (`HTTPException`)
-- [x] Debugging: a browser `500` → go read the server log
+- [x] JSX & components; `{ }`, `.map()` + `key`, one root element
+- [x] React state (`useState`) & "UI = f(state)"
+- [x] `useEffect` + the fetch lifecycle; Promises (`.then`/`.catch`/`.finally`)
+- [x] Handling loading / error / success; the `response.ok` footgun
+- [x] Same-origin policy, **CORS** & middleware (browser-enforced!)
+- [x] Debugging: browser console (frontend) vs. server log (backend)
 
 **Coming up:**
-- [ ] JSX & components
-- [ ] React state (`useState`) & "UI = f(state)"
-- [ ] `fetch()` & CORS
 - [ ] SQLModel & SQLite CRUD
 - [ ] One-to-many relationships
 - [ ] Forms & controlled inputs
@@ -211,7 +196,10 @@ Jot a line here whenever something clicks or bites — future-you will thank you
   self-contained subprojects. Backend code lives in the `app/` package; run it from
   inside `backend/` with `uvicorn app.main:app --reload`.
 - **Step 2:** Built the API — `GET /contacts` (the list) and `GET /contacts/{id}` (one).
-  Learned what JSON actually is, added a `Contact` Pydantic model so bad data can't slip
-  through, and the get-or-404 pattern. Rule that stuck: a browser `500` → read the server
-  terminal for the real error.
+  Learned what JSON actually is, added a `Contact` Pydantic model, and the get-or-404
+  pattern. Rule that stuck: a browser `500` → read the server terminal for the real error.
+- **Step 3:** The frontend came alive — a React page that fetches `/contacts` and renders
+  it, with loading + error states. Hit the CORS wall and fixed it with `CORSMiddleware`.
+  Big lesson: CORS is **browser-enforced** — the server said `200`, the browser blocked
+  the read. Also: `fetch` doesn't reject on 4xx/5xx, so check `response.ok`.
 ```
