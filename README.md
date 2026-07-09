@@ -11,8 +11,8 @@ development — backend-first, one concept at a time, code written by hand.
 
 ## 📍 You are here
 
-**Step 1 of 6 — Setup & Hello World**
-`▰▱▱▱▱▱`  ·  backend ✅ alive (standard layout) · frontend ⏳ verifying · first commit pending
+**Step 2 of 6 ✅ done — First API**   →   next up: **Step 3 — First React Page**
+`▰▰▱▱▱▱`  ·  backend now serves validated JSON · frontend is still the Vite starter
 
 ---
 
@@ -70,7 +70,7 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 │   ├── .gitignore            ← Python ignores
 │   └── app/                  ← the application PACKAGE
 │       ├── __init__.py       ← marks app/ as an importable package
-│       └── main.py           ← creates the FastAPI app
+│       └── main.py           ← the FastAPI app + endpoints
 │
 └── frontend/                 ← self-contained JS project
     ├── package.json          ← frontend deps & metadata
@@ -109,7 +109,7 @@ npm run dev
 
 ## 🎯 Roadmap
 
-### Step 1 — Setup & Hello World  ·  new idea: *client–server model*
+### Step 1 — Setup & Hello World  ·  *client–server model*  ✅
 - [x] Confirm the stack & the build target
 - [x] Understand the two-process (client–server) model
 - [x] Backend: install FastAPI + Uvicorn
@@ -121,13 +121,17 @@ npm run dev
 - [x] Frontend: dev server runs — starter page + counter at `:5173`
 - [x] 💾 commit: *"Step 1: FastAPI + React hello world"*
 
-### Step 2 — First API  ·  new idea: *routes & Pydantic*
-- [ ] Learn: routes, HTTP methods, path vs query params
-- [ ] Return a hardcoded list of contacts as JSON
-- [ ] Define a `Contact` Pydantic model
-- [ ] See response validation in the auto-docs
-- [ ] Understand *why* Pydantic matters (data at the edges)
-- [ ] 💾 commit
+### Step 2 — First API  ·  *routes, JSON & Pydantic*  ✅
+- [x] Routes & HTTP methods; the CRUD ↔ verb map
+- [x] REST: URLs name *things* (`/contacts`, `/contacts/{id}`)
+- [x] What JSON really is (text; serialize / parse; vs. Python dict)
+- [x] Return a list of contacts as JSON
+- [x] Define a `Contact` Pydantic model — the data "blueprint"
+- [x] FastAPI reads type hints → validates output **and** input
+- [x] Read errors: browser `500` vs. the real message in the server log
+- [x] HTTP status codes: 2xx / 4xx / 5xx (`200`, `404`, `422`, `500`)
+- [x] Path parameters + the get-or-404 pattern (`HTTPException`)
+- [x] 💾 commit: *"Step 2: contacts API with Pydantic validation"*
 
 ### Step 3 — First React Page  ·  new idea: *UI = f(state)*
 - [ ] Learn: components & JSX
@@ -145,7 +149,7 @@ npm run dev
 - [ ] Create the DB and the `contacts` table
 - [ ] Implement **C**reate + **R**ead endpoints
 - [ ] Implement **U**pdate + **D**elete endpoints
-- [ ] Learn: path params for `/contacts/{id}`
+- [ ] Learn: path params for `/contacts/{id}` against real data
 - [ ] Test full CRUD via `/docs`
 - [ ] 💾 commit
 
@@ -170,18 +174,28 @@ npm run dev
 
 ## 🧠 Concepts unlocked
 
+**Unlocked so far:**
 - [x] Client–server model; HTTP request/response
 - [x] `localhost` & ports (`:8000` backend, `:5173` frontend)
 - [x] Server vs app: **Uvicorn** (the server) runs **FastAPI** (the app)
-- [x] FastAPI turns a Python `dict` into a JSON response automatically
 - [x] Auto-generated interactive API docs (`/docs`)
-- [x] How `uv` finds a project (searches *upward*) & how Python imports resolve (`sys.path`/CWD)
+- [x] How `uv` finds a project (searches *upward*) & how Python imports resolve
 - [x] Standard layout: self-contained subprojects; app code in a package (`app/`)
 - [x] Two-language repo: `.venv` vs `node_modules`; per-subproject `.gitignore`
+- [x] HTTP methods & the CRUD map
+- [x] REST: resource-oriented URLs (`/contacts`, `/contacts/{id}`)
+- [x] JSON: a *text* format; serialize (Python→JSON) / parse (JSON→objects)
+- [x] Pydantic models & response validation
+- [x] FastAPI reads type hints → validates **input and output**
+- [x] Path parameters
+- [x] HTTP status codes (2xx / 4xx / 5xx)
+- [x] The get-or-404 pattern (`HTTPException`)
+- [x] Debugging: a browser `500` → go read the server log
+
+**Coming up:**
 - [ ] JSX & components
 - [ ] React state (`useState`) & "UI = f(state)"
 - [ ] `fetch()` & CORS
-- [ ] Pydantic models & validation
 - [ ] SQLModel & SQLite CRUD
 - [ ] One-to-many relationships
 - [ ] Forms & controlled inputs
@@ -196,4 +210,8 @@ Jot a line here whenever something clicks or bites — future-you will thank you
 - **Step 1:** Adopted the standard layout — `backend/` and `frontend/` are each
   self-contained subprojects. Backend code lives in the `app/` package; run it from
   inside `backend/` with `uvicorn app.main:app --reload`.
+- **Step 2:** Built the API — `GET /contacts` (the list) and `GET /contacts/{id}` (one).
+  Learned what JSON actually is, added a `Contact` Pydantic model so bad data can't slip
+  through, and the get-or-404 pattern. Rule that stuck: a browser `500` → read the server
+  terminal for the real error.
 ```
