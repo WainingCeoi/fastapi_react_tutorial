@@ -11,9 +11,9 @@ development — backend-first, one concept at a time, code written by hand.
 
 ## 📍 You are here
 
-**Step 5 of 6 ✅ done — The Real App**   →   next up: **Step 6 — Grown-up Backend**
-`▰▰▰▰▰▱`  ·  full app: contacts + notes, list + detail, CRUD from the UI
-📌 *Pivot: frontend concepts are in hand — from here the focus is backend depth (AI assists the UI).*
+**Step 6 of 8 ✅ done — Backend Architecture**   →   next up: **Step 7 — Config & Auth**
+`▰▰▰▰▰▰▱▱`  ·  injected sessions, a real test suite, and a modular package
+📌 *Focus is backend depth (AI assists the UI). The old catch-all "Step 6" is now split into 6–8.*
 
 ---
 
@@ -47,6 +47,7 @@ Frontend = the looks. Backend = the brains. **The database = the memory** (persi
 | Web server | **Uvicorn** | Runs the FastAPI app on a port |
 | Data models | **Pydantic v2** | Validation; ships with FastAPI |
 | Database | **SQLModel + SQLite** | SQLite is just a file — zero setup |
+| Testing | **pytest + TestClient** | In-process API tests, no server, throwaway DB |
 | Python manager | **uv** | Deps + virtualenv |
 | Frontend | **React + Vite** | Modern, fast dev server + JSX compiler |
 | Language | **Plain JavaScript**, **plain CSS** | Kept minimal on purpose |
@@ -66,9 +67,16 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 ├── backend/                  ← self-contained PYTHON project  ← main focus
 │   ├── pyproject.toml  uv.lock  .python-version  .venv/  .gitignore
 │   ├── database.db           ← the SQLite database (gitignored)
+│   ├── tests/
+│   │   └── test_main.py      ← pytest suite (TestClient + in-memory DB)
 │   └── app/
 │       ├── __init__.py
-│       └── main.py           ← FastAPI app, models, DB, endpoints
+│       ├── main.py           ← wiring: middleware, include_router, startup
+│       ├── model.py          ← SQLModel models
+│       ├── database.py       ← engine, session (get_session / SessionDep)
+│       └── routers/          ← endpoints by resource (APIRouter)
+│           ├── contacts.py
+│           └── notes.py
 │
 └── frontend/                 ← self-contained JS project (React + Vite)
     ├── package.json  node_modules/  .gitignore
@@ -97,6 +105,12 @@ cd frontend
 npm run dev
 ```
 → http://localhost:5173
+
+**Tests** (backend):
+```bash
+cd backend
+uv run pytest
+```
 
 ---
 
@@ -129,19 +143,28 @@ npm run dev
 ### Step 5 — The Real App  ·  *relationships & UI*  ✅
 - [x] Backend: **Notes**, one-to-many with Contacts (foreign key + nested routes)
 - [x] Frontend: list view, detail view, and note forms
-- [x] Controlled inputs; create & delete from the UI; `useEffect` dependencies
 - [x] Client-side routing — hand-built the **React Router** migration (real URLs, survives refresh)
 - [x] Post-review fixes: cascade-delete a contact's notes; not-found handling on direct URLs
-- [x] 💾 commit: *"Step 5: notes relationship + interactive UI"*
+- [x] 💾 commit: *"Step 5: React Router migration + review fixes"*
 
-### Step 6 — Grown-up Backend  ·  *the backend deep-dive* 🎯
-- [ ] Dependency injection: a shared DB session via `Depends` (`get_session`)
-- [ ] Split `main.py` into **routers / modules** (contacts, notes) + a clean package layout
-- [ ] Config & settings (env vars via `pydantic-settings`)
-- [ ] Automated **tests** with `pytest` + FastAPI `TestClient`
-- [ ] **Auth** basics: password hashing, JWT tokens, protecting routes
-- [ ] **Database migrations** with Alembic (evolving the schema safely)
-- [ ] Concept: the strangler-fig pattern (migrating a legacy app onto this stack)
+### Step 6 — Backend Architecture  ·  *DI, testing, structure*  ✅
+- [x] **Dependency injection** — a per-request DB session via `Depends` (`get_session` / `SessionDep`)
+- [x] **Automated tests** — `pytest` + `TestClient`, overriding `get_session` onto an in-memory DB
+- [x] Cover the **unhappy paths** (all four 404s) + the cascade-delete behavior
+- [x] **Project structure** — split into `model.py`, `database.py`, and `routers/` (`APIRouter`)
+- [x] `main.py` reduced to pure wiring (`include_router`)
+- [x] 💾 commit: *"Step 6: dependency injection, tests, and router-based structure"*
+
+### Step 7 — Config & Auth  ·  new idea: *settings & securing the API* 🎯
+- [ ] Config/settings: move values (DB URL, secret key) to env vars via `pydantic-settings`
+- [ ] Password **hashing** (never store plaintext) — `passlib` / `bcrypt`
+- [ ] **JWT** tokens: issue on login, verify on requests
+- [ ] Protect routes with an auth dependency (`Depends`)
+- [ ] 💾 commit(s)
+
+### Step 8 — Migrations & the Strangler-Fig  ·  *evolving & adopting* (stretch)
+- [ ] **Alembic** migrations — change the schema without dropping data
+- [ ] Concept: the **strangler-fig** pattern — migrating a legacy app onto this stack incrementally
 - [ ] 💾 commit(s)
 
 ---
@@ -158,6 +181,9 @@ npm run dev
 - [x] Querying: `select` / `.where` / `session.get`; DB-assigned ids
 - [x] **One-to-many relationships** (foreign keys + nested routes)
 - [x] CORS & middleware (browser-enforced)
+- [x] **Dependency injection** (`Depends` / `SessionDep`) — endpoint-only, a fresh session per request
+- [x] **Automated testing** — `pytest`, `TestClient`, `dependency_overrides`, fixtures, in-memory DB
+- [x] **Project structure** — `APIRouter` + `include_router`; separation of concerns
 
 **Frontend (concepts in hand — enough to direct an AI):**
 - [x] SPA vs. traditional multi-page site
@@ -166,9 +192,9 @@ npm run dev
 - [x] Controlled form inputs
 - [x] **React Router** — `BrowserRouter` / `Routes` / `Route` / `Link` / `useParams` (URL-driven views)
 
-**Coming up (Step 6 — backend):**
-- [ ] Dependency injection (`Depends`); routers; config; testing
-- [ ] Auth & JWT tokens; Alembic migrations
+**Coming up (Steps 7–8 — backend):**
+- [ ] Config/settings (`pydantic-settings`); password hashing; **JWT auth**
+- [ ] Alembic migrations; the strangler-fig pattern
 
 ---
 
@@ -184,8 +210,11 @@ Jot a line here whenever something clicks or bites — future-you will thank you
   (server said `200`, browser blocked the read).
 - **Step 4:** Gave the app a memory — SQLModel table + SQLite + full CRUD. A contact added
   via the API **survived a restart**. The DB assigns ids; `refresh` reloads them after commit.
-- **Step 5:** Real app — one-to-many **Notes** (foreign key), an interactive UI (list, detail,
-  forms), and a hand-built **React Router** migration (URL-driven views that survive a refresh).
-  A multi-agent adversarial review then caught two real edges: notes were orphaned on contact
-  delete (added a cascade), and a direct URL to a missing contact rendered blank (added not-found
-  handling). Pivoting to **backend depth** next; AI assists the UI from here.
+- **Step 5:** Real app — one-to-many **Notes** (foreign key), an interactive UI, and a hand-built
+  **React Router** migration. A multi-agent review caught two edges (orphaned notes on delete →
+  cascade; blank page on a missing direct URL → not-found handling). Pivoted to backend depth.
+- **Step 6:** Reshaped the backend to production form — **dependency injection** (`get_session`
+  as a per-request "vending machine"), a real **pytest + TestClient** suite (8 tests, incl. the
+  404s and the cascade), and a modular **package** (`model` / `database` / `routers`) with
+  `main.py` as pure wiring. The tests then blessed the refactor unchanged — the point of writing
+  them first. (Review also caught a stray `httpx2` dep — corrected to the real `httpx`.)

@@ -36,4 +36,6 @@ detail.
 | 3 | [First React Page](step-3-first-react-page.md) | Components, state, fetching, CORS |
 | 4 | [A Database](step-4-a-database.md) | Persistence, SQLModel, CRUD |
 | 5 | [The Real App](step-5-the-real-app.md) | Relationships, forms, detail views |
-| 6 | *Grown-up Concepts* (coming) | Auth, structure, migration |
+| 6 | [Backend Architecture](step-6-backend-architecture.md) | Dependency injection, testing, project structure |
+| 7 | *Config & Auth* (coming) | Settings, password hashing, JWT |
+| 8 | *Migrations & Strangler-Fig* (coming) | Alembic, incremental legacy migration |

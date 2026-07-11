@@ -125,4 +125,4 @@ re-run when it changes (so switching contacts re-fetches that contact's notes).
   contact that no longer exists).
 
 ---
-**← [Step 4](step-4-a-database.md) · Next → Step 6 (coming): Grown-up Backend**
+**← [Step 4](step-4-a-database.md) · Next → [Step 6 — Backend Architecture](step-6-backend-architecture.md)**
