@@ -113,7 +113,11 @@ app/
 - **Tests make refactoring fearless.** This step moved code across five files, three times; the
   suite confirmed identical behavior every time. *That's why you write tests before refactoring.*
 - **`main.py` should read like a table of contents** — wiring, not logic.
-- **`TestClient` needs the real `httpx`** (versions `0.x`), *not* `httpx2` — declare dev deps precisely.
+- **`TestClient` needs an HTTP client you declare yourself.** As of mid-2026 Starlette wants
+  **`httpx2`** — Pydantic's stewarded successor to `httpx` (same original author, Tom Christie). The
+  *"install `httpx2` instead"* deprecation warning is **genuine**. Still, **verify any unfamiliar
+  package** (author, the real org's repo at `github.com/pydantic/httpx2`, download counts) before
+  adopting it — `httpx2` checks out; a typosquat wouldn't.
 
 ---
 **← [Step 5](step-5-the-real-app.md) · Next → Step 7 (coming): Config & Auth**

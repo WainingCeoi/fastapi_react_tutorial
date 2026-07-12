@@ -217,4 +217,6 @@ Jot a line here whenever something clicks or bites — future-you will thank you
   as a per-request "vending machine"), a real **pytest + TestClient** suite (8 tests, incl. the
   404s and the cascade), and a modular **package** (`model` / `database` / `routers`) with
   `main.py` as pure wiring. The tests then blessed the refactor unchanged — the point of writing
-  them first. (Review also caught a stray `httpx2` dep — corrected to the real `httpx`.)
+  them first. (Supply-chain lesson: Starlette now wants **`httpx2`** — Pydantic's real successor to
+  `httpx`, *not* a typosquat — which we confirmed against PyPI + `github.com/pydantic/httpx2` before
+  trusting the deprecation warning.)
