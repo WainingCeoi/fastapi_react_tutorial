@@ -103,3 +103,31 @@ def test_update_contact(client):
     assert response.json()["name"] == "Ada Lovelace"
 
     assert client.get(f"/contacts/{cid}").json()["email"] == "ada@x.com"
+
+
+def test_me_with_token(client):
+    client.post("/users", json={"username": "alice", "password": "hunter2"})
+    login = client.post("/token", data={"username": "alice", "password": "hunter2"})
+    token = login.json()["access_token"]
+
+    response = client.get("/users/me", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json()["username"] == "alice"
+
+
+def test_login_wrong_password(client):
+    client.post("/users", json={"username": "alice", "password": "hunter2"})
+    response = client.post("/token", data={"username": "alice", "password": "nope"})
+    assert response.status_code == 401
+
+
+def test_me_without_token(client):
+    response = client.get("/users/me")  # no header at all — no setup needed
+    assert response.status_code == 401
+
+
+def test_register_does_not_leak_hash(client):
+    response = client.post("/users", json={"username": "alice", "password": "hunter2"})
+    assert response.status_code == 200
+    assert "hashed_password" not in response.json()
+    assert "password" not in response.json()

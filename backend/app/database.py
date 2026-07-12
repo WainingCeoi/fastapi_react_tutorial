@@ -3,7 +3,9 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-engine = create_engine("sqlite:///database.db", echo=True)
+from app.config import settings
+
+engine = create_engine(settings.database_url, echo=True)
 
 
 def get_session():

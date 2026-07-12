@@ -4,18 +4,21 @@ from sqlmodel import Session, select
 
 from app.database import create_db_and_tables, engine
 from app.model import Contact
-from app.routers import contacts, notes
+from app.routers import contacts, notes, users
+
+from app.config import settings
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[settings.frontend_origin],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(contacts.router)
 app.include_router(notes.router)
+app.include_router(users.router)
 
 
 @app.get("/")
