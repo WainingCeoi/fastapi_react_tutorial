@@ -130,8 +130,10 @@ npm run dev
 cd backend
 uv run pytest
 ```
-> Tests import the app, so a `.env` must exist (the `cp` above) — but they run entirely
-> on a throwaway in-memory DB; no migrations needed and `database.db` is never touched.
+> Tests import the app, so a **valid** `.env` must exist first — do the first-run setup
+> above (`SECRET_KEY` filled in; an empty one fails validation at import). But the tests
+> themselves run entirely on a throwaway in-memory DB: no migrations, and `database.db`
+> is never touched.
 
 ---
 

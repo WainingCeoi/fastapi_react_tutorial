@@ -9,7 +9,7 @@ class Contact(SQLModel, table=True):
 
 
 class ContactCreate(SQLModel):
-    name: str = Field(min_length=1)  # reject blank names at the API boundary
+    name: str = Field(min_length=1)  # reject the empty string (not whitespace) at the boundary
     email: str
     phone: str | None = None
 

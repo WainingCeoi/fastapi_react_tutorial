@@ -53,6 +53,10 @@ def delete_contact(contact_id: int, session: SessionDep):
     notes = session.exec(select(Note).where(Note.contact_id == contact_id)).all()
     for note in notes:
         session.delete(note)
+    # flush the child DELETEs to the DB *before* deleting the parent — SQLAlchemy's
+    # unit-of-work doesn't order these for us (there's no ORM relationship), and with
+    # SQLite FK enforcement on, deleting the contact first would fail the constraint.
+    session.flush()
     session.delete(contact)
     session.commit()
     return {"ok": True}

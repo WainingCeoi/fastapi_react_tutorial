@@ -36,7 +36,13 @@ def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep
 ) -> dict:
     user = session.exec(select(User).where(User.username == form_data.username)).first()
-    if user is None or not verify_password(form_data.password, user.hashed_password):
+    # argon2 is deliberately slow; don't hash unbounded attacker input. Login has no
+    # Pydantic model to bound it, and a real password can't exceed the registration cap.
+    if (
+        user is None
+        or len(form_data.password) > 128
+        or not verify_password(form_data.password, user.hashed_password)
+    ):
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     token = create_access_token({"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}

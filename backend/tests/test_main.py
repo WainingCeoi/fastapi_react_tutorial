@@ -1,5 +1,5 @@
 import pytest
-from app.database import get_session
+from app.database import enable_sqlite_foreign_keys, get_session
 from app.main import app
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
@@ -14,6 +14,7 @@ def client_fixture():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    enable_sqlite_foreign_keys(engine)  # match production: FK enforcement ON
     SQLModel.metadata.create_all(engine)  # make the tables in it
 
     def get_session_override():
