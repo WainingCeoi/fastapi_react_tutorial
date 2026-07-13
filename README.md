@@ -11,9 +11,9 @@ development — backend-first, one concept at a time, code written by hand.
 
 ## 📍 You are here
 
-**Step 6 of 8 ✅ done — Backend Architecture**   →   next up: **Step 7 — Config & Auth**
-`▰▰▰▰▰▰▱▱`  ·  injected sessions, a real test suite, and a modular package
-📌 *Focus is backend depth (AI assists the UI). The old catch-all "Step 6" is now split into 6–8.*
+**Step 7 of 7 ✅ done — Config, Auth & Migrations**   ·   🎉 the guided build is complete
+`▰▰▰▰▰▰▰`  ·  secrets in the environment, JWT auth, and Alembic schema migrations
+📌 *Backend is now production-shaped. Steps 7 & 8 merged into one "make it production-ready" arc.*
 
 ---
 
@@ -48,6 +48,10 @@ Frontend = the looks. Backend = the brains. **The database = the memory** (persi
 | Data models | **Pydantic v2** | Validation; ships with FastAPI |
 | Database | **SQLModel + SQLite** | SQLite is just a file — zero setup |
 | Testing | **pytest + TestClient** | In-process API tests, no server, throwaway DB |
+| Config | **pydantic-settings** | Secrets & settings from env / `.env`, validated |
+| Auth — hashing | **pwdlib + Argon2** | Salted, one-way password hashing |
+| Auth — tokens | **PyJWT** | Signed JWT access tokens (OAuth2 password flow) |
+| Migrations | **Alembic** | Versioned, reversible schema changes |
 | Python manager | **uv** | Deps + virtualenv |
 | Frontend | **React + Vite** | Modern, fast dev server + JSX compiler |
 | Language | **Plain JavaScript**, **plain CSS** | Kept minimal on purpose |
@@ -66,17 +70,25 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 │
 ├── backend/                  ← self-contained PYTHON project  ← main focus
 │   ├── pyproject.toml  uv.lock  .python-version  .venv/  .gitignore
+│   ├── .env                  ← secrets & settings (gitignored!)
 │   ├── database.db           ← the SQLite database (gitignored)
+│   ├── alembic.ini           ← Alembic config
+│   ├── alembic/              ← schema migrations
+│   │   ├── env.py            ← wired to settings + SQLModel.metadata
+│   │   └── versions/         ← one file per schema change (the history)
 │   ├── tests/
 │   │   └── test_main.py      ← pytest suite (TestClient + in-memory DB)
 │   └── app/
 │       ├── __init__.py
 │       ├── main.py           ← wiring: middleware, include_router, startup
-│       ├── model.py          ← SQLModel models
+│       ├── config.py         ← Settings (pydantic-settings) ← reads .env
+│       ├── model.py          ← SQLModel models (Contact, Note, User)
 │       ├── database.py       ← engine, session (get_session / SessionDep)
+│       ├── security.py       ← hashing, JWT, get_current_user
 │       └── routers/          ← endpoints by resource (APIRouter)
 │           ├── contacts.py
-│           └── notes.py
+│           ├── notes.py
+│           └── users.py      ← register, login (/token), /users/me
 │
 └── frontend/                 ← self-contained JS project (React + Vite)
     ├── package.json  node_modules/  .gitignore
@@ -95,9 +107,13 @@ Two servers = two terminals, each *inside* its own subproject.
 **Backend** — terminal 1:
 ```bash
 cd backend
+uv run alembic upgrade head          # create/upgrade the DB schema (first run + after model changes)
 uv run uvicorn app.main:app --reload
 ```
 → http://127.0.0.1:8000  ·  auto-docs at http://127.0.0.1:8000/docs
+
+> First run needs a gitignored `.env` with at least `DATABASE_URL` and `SECRET_KEY`
+> (generate one with `openssl rand -hex 32`). The app **fails fast** if either is missing.
 
 **Frontend** — terminal 2:
 ```bash
@@ -155,17 +171,17 @@ uv run pytest
 - [x] `main.py` reduced to pure wiring (`include_router`)
 - [x] 💾 commit: *"Step 6: dependency injection, tests, and router-based structure"*
 
-### Step 7 — Config & Auth  ·  new idea: *settings & securing the API* 🎯
-- [ ] Config/settings: move values (DB URL, secret key) to env vars via `pydantic-settings`
-- [ ] Password **hashing** (never store plaintext) — `passlib` / `bcrypt`
-- [ ] **JWT** tokens: issue on login, verify on requests
-- [ ] Protect routes with an auth dependency (`Depends`)
-- [ ] 💾 commit(s)
+### Step 7 — Config, Auth & Migrations  ·  *making it production-ready*  ✅
+- [x] Config/settings: DB URL, CORS origin & **`SECRET_KEY`** in env vars via `pydantic-settings`
+- [x] Password **hashing** (salted, never plaintext) — **`pwdlib` + Argon2**
+- [x] **JWT** login (`OAuth2` password flow via **PyJWT**): issue on `/token`, verify per request
+- [x] Protect routes with an auth dependency — `get_current_user` / `CurrentUserDep`
+- [x] The three-model split (`UserCreate` / `User` / `UserPublic`) so the hash never leaks
+- [x] **Alembic** migrations — evolved the schema (added `Contact.phone`) with **zero data loss**
+- [x] Concept: the **strangler-fig** pattern — evolve a legacy system incrementally, not big-bang
+- [x] 💾 commit: *"Step 7 (config + auth): pydantic-settings, password hashing, JWT login"* (migrations to follow)
 
-### Step 8 — Migrations & the Strangler-Fig  ·  *evolving & adopting* (stretch)
-- [ ] **Alembic** migrations — change the schema without dropping data
-- [ ] Concept: the **strangler-fig** pattern — migrating a legacy app onto this stack incrementally
-- [ ] 💾 commit(s)
+> **Steps 7 & 8 were merged** into this single "make it production-ready" arc.
 
 ---
 
@@ -184,6 +200,10 @@ uv run pytest
 - [x] **Dependency injection** (`Depends` / `SessionDep`) — endpoint-only, a fresh session per request
 - [x] **Automated testing** — `pytest`, `TestClient`, `dependency_overrides`, fixtures, in-memory DB
 - [x] **Project structure** — `APIRouter` + `include_router`; separation of concerns
+- [x] **Config & secrets** — `pydantic-settings`, `.env`, fail-fast on missing required values
+- [x] **Authentication** — salted hashing (Argon2), JWT (signed not encrypted), OAuth2 login, `get_current_user`
+- [x] **Migrations** — Alembic autogenerate → review → `upgrade`; versioned, reversible schema history
+- [x] **Strangler-fig** — evolving a real system incrementally behind a facade
 
 **Frontend (concepts in hand — enough to direct an AI):**
 - [x] SPA vs. traditional multi-page site
@@ -192,9 +212,9 @@ uv run pytest
 - [x] Controlled form inputs
 - [x] **React Router** — `BrowserRouter` / `Routes` / `Route` / `Link` / `useParams` (URL-driven views)
 
-**Coming up (Steps 7–8 — backend):**
-- [ ] Config/settings (`pydantic-settings`); password hashing; **JWT auth**
-- [ ] Alembic migrations; the strangler-fig pattern
+**🎉 The guided build is complete** — every planned concept is checked off. Natural next
+extensions, whenever you want them: wire `phone` into the API, protect the contacts routes behind
+`CurrentUserDep`, add refresh tokens, or point the backend at PostgreSQL.
 
 ---
 
@@ -220,3 +240,10 @@ Jot a line here whenever something clicks or bites — future-you will thank you
   them first. (Supply-chain lesson: Starlette now wants **`httpx2`** — Pydantic's real successor to
   `httpx`, *not* a typosquat — which we confirmed against PyPI + `github.com/pydantic/httpx2` before
   trusting the deprecation warning.)
+- **Step 7:** Made it production-shaped — **config** (`pydantic-settings`; secrets in a gitignored
+  `.env`; fail-fast when a required value is missing), **auth** (Argon2 password hashing, the
+  three-model split so the hash never leaks, an OAuth2 `/token` login issuing **PyJWT** tokens, and
+  `get_current_user` — protecting a route became *one dependency*, the DI payoff), and **Alembic
+  migrations** (retired `create_all`; autogenerated an `add_column` that grew `Contact.phone` with
+  **zero data loss**). Closed with the **strangler-fig** mindset. Recurring lesson: verify tools
+  against live sources over stale memory (`pwdlib`/`PyJWT`, not the older `passlib`/`python-jose`).

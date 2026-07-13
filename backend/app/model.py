@@ -5,6 +5,7 @@ class Contact(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     email: str
+    phone: str | None = None
 
 
 class ContactCreate(SQLModel):

@@ -120,4 +120,4 @@ app/
   adopting it — `httpx2` checks out; a typosquat wouldn't.
 
 ---
-**← [Step 5](step-5-the-real-app.md) · Next → Step 7 (coming): Config & Auth**
+**← [Step 5](step-5-the-real-app.md) · Next → [Step 7 — Config, Auth & Migrations](step-7-config-auth-migrations.md)**

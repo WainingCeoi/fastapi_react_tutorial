@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
-from app.database import create_db_and_tables, engine
+from app.database import engine
 from app.model import Contact
 from app.routers import contacts, notes, users
 
@@ -37,5 +37,5 @@ def seed_data():
             session.commit()
 
 
-create_db_and_tables()
+# create_db_and_tables()
 seed_data()
