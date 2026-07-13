@@ -23,6 +23,7 @@ function ContactList() {
 
   function handleSubmit(event) {
     event.preventDefault()
+    setError(null) // clear any stale banner before a fresh attempt
     fetch(`${API}/contacts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,6 +42,7 @@ function ContactList() {
   }
 
   function handleDelete(id) {
+    setError(null) // clear any stale banner before a fresh attempt
     fetch(`${API}/contacts/${id}`, { method: "DELETE" })
       .then((response) => {
         if (!response.ok) throw new Error(`Server error: ${response.status}`)
