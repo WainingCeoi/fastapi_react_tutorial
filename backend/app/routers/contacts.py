@@ -8,7 +8,9 @@ router = APIRouter(tags=["contacts"])  # tags → groups these under "contacts" 
 
 @router.post("/contacts")
 def create_contact(contact_data: ContactCreate, session: SessionDep) -> Contact:
-    contact = Contact(name=contact_data.name, email=contact_data.email)
+    contact = Contact(
+        name=contact_data.name, email=contact_data.email, phone=contact_data.phone
+    )
     session.add(contact)
     session.commit()
     session.refresh(contact)
@@ -37,6 +39,7 @@ def update_contact(
         raise HTTPException(status_code=404, detail="Contact not found")
     contact.name = contact_data.name
     contact.email = contact_data.email
+    contact.phone = contact_data.phone
     session.commit()
     session.refresh(contact)
     return contact

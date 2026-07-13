@@ -169,7 +169,10 @@ uv run alembic current                                              # where is t
   a drop-and-add.
 - **Adopting on a populated DB:** ours held only throwaway seed data, so we wiped it and let the
   initial autogenerate capture the full schema. On a real DB you can't wipe — you'd `alembic stamp` it
-  as already-at-a-revision instead.
+  as already-at-a-revision instead. *Caveat:* `stamp` only tells Alembic "this DB is at revision X" —
+  it's valid **only if the DB's actual schema matches** that revision. A DB that's *between* revisions
+  (e.g. this tutorial's own steps-4–6 `database.db`: has `contact`/`note` but no `user` table) matches
+  none of them; there you either write a bridging migration or, for throwaway data, just delete the file.
 
 > The philosophy switch: `create_all` and Alembic are two ways to manage schema — *"snap to the models
 > now"* vs *"apply an ordered history."* Adopting Alembic means **retiring `create_all`** (we removed
@@ -218,6 +221,10 @@ strangler-fig for the schema** — evolve in reversible increments, never drop-a
   no test. And **error responses carry `{"detail": …}`**, not the resource.
 - **Latent bugs hide in unrun code paths** (the offline `env.py` function, the `Table=True` typo) — a
   clean command doesn't prove every path is correct.
+- **Startup code belongs in a lifespan handler, not at module import.** A module-level `seed_data()`
+  ran on *import* — crashing fresh clones (pytest collection touched an unmigrated DB) and silently
+  seeding the real `database.db` from test runs. `FastAPI(lifespan=...)` runs it when the *server*
+  starts instead. (Caught by the post-step multi-agent review.)
 - **Verify unfamiliar tools against live sources over stale memory** — `pwdlib`/`PyJWT` are the current
   stack, not the older `passlib`/`python-jose`; `httpx2` turned out to be Pydantic's real successor.
 

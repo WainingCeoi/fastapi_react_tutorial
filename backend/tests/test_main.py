@@ -106,8 +106,8 @@ def test_update_contact(client):
 
 
 def test_me_with_token(client):
-    client.post("/users", json={"username": "alice", "password": "hunter2"})
-    login = client.post("/token", data={"username": "alice", "password": "hunter2"})
+    client.post("/users", json={"username": "alice", "password": "hunter2secret"})
+    login = client.post("/token", data={"username": "alice", "password": "hunter2secret"})
     token = login.json()["access_token"]
 
     response = client.get("/users/me", headers={"Authorization": f"Bearer {token}"})
@@ -116,7 +116,7 @@ def test_me_with_token(client):
 
 
 def test_login_wrong_password(client):
-    client.post("/users", json={"username": "alice", "password": "hunter2"})
+    client.post("/users", json={"username": "alice", "password": "hunter2secret"})
     response = client.post("/token", data={"username": "alice", "password": "nope"})
     assert response.status_code == 401
 
@@ -127,7 +127,35 @@ def test_me_without_token(client):
 
 
 def test_register_does_not_leak_hash(client):
-    response = client.post("/users", json={"username": "alice", "password": "hunter2"})
+    response = client.post("/users", json={"username": "alice", "password": "hunter2secret"})
     assert response.status_code == 200
     assert "hashed_password" not in response.json()
     assert "password" not in response.json()
+
+
+def test_register_duplicate_username_returns_400(client):
+    client.post("/users", json={"username": "alice", "password": "hunter2secret"})
+    response = client.post("/users", json={"username": "alice", "password": "hunter2secret"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Username already registered"
+
+
+def test_register_short_password_returns_422(client):
+    response = client.post("/users", json={"username": "alice", "password": "short"})
+    assert response.status_code == 422  # validation, not our code — Pydantic's gate
+
+
+def test_contact_phone_roundtrip(client):
+    created = client.post(
+        "/contacts",
+        json={"name": "Mike", "email": "mike@x.com", "phone": "505-503-4455"},
+    ).json()
+    assert created["phone"] == "505-503-4455"
+
+    updated = client.put(
+        f"/contacts/{created['id']}",
+        json={"name": "Mike", "email": "mike@x.com", "phone": "505-000-0000"},
+    ).json()
+    assert updated["phone"] == "505-000-0000"
+
+    assert client.get(f"/contacts/{created['id']}").json()["phone"] == "505-000-0000"

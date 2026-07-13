@@ -9,8 +9,9 @@ class Contact(SQLModel, table=True):
 
 
 class ContactCreate(SQLModel):
-    name: str
+    name: str = Field(min_length=1)  # reject blank names at the API boundary
     email: str
+    phone: str | None = None
 
 
 class Note(SQLModel, table=True):
@@ -30,8 +31,10 @@ class User(SQLModel, table=True):
 
 
 class UserCreate(SQLModel):
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=50)
+    # max_length matters too: hashing is deliberately slow, so an unbounded
+    # password lets anyone burn server CPU with multi-megabyte input
+    password: str = Field(min_length=8, max_length=128)
 
 
 class UserPublic(SQLModel):
