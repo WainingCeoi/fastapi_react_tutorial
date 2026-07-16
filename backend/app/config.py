@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     secret_key: str = Field(min_length=32)
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
-    db_echo: bool = False  # SQL logging — off by default: it prints INSERTed values (incl. password hashes)
+    db_echo: bool = False
 
 
 settings = Settings()

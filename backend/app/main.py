@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 
 from app.config import settings
 from app.database import engine
@@ -25,6 +25,7 @@ def seed_data():
 async def lifespan(app: FastAPI):
     # startup: runs once when the SERVER starts (not when the module is imported)
     # — by now `alembic upgrade head` has built the schema
+    SQLModel.metadata.create_all(engine)
     seed_data()
     yield  # the app serves requests while parked here
     # shutdown: anything after the yield would run when the server stops
