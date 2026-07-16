@@ -27,6 +27,17 @@ A modern web app is **two programs talking over HTTP**: a **frontend** (the look
 the browser) and a **backend** (the brains & memory, runs on a server). Everything else is
 detail.
 
+## Run it
+
+The repo has a root **`Makefile`** as its universal entrance — `make dev` runs both servers
+(the diagram above), `make start` builds the UI and serves it **plus** the API from one
+process on `:8000`. Full instructions live in the [root README](../README.md#-run-it).
+
+> **Two servers → one, in production.** In `make start` the backend serves the built React app
+> for every path except `/api/…` (which stays the JSON API). Namespacing the API under `/api`
+> is what lets a single server host both without their routes colliding — and keeps a refresh
+> on a real URL like `/contacts/1` landing on the app.
+
 ## Steps
 
 | # | Doc | What you'll understand |

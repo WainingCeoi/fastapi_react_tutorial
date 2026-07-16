@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 
-const API = "http://localhost:8000"
+// dev: talk to the backend cross-origin (CORS). prod build (single-server, `make start`):
+// same-origin relative path — this app and the API are served by one process.
+const API = import.meta.env.DEV ? "http://localhost:8000/api" : "/api"
 
 function ContactList() {
   const [contacts, setContacts] = useState([])

@@ -30,12 +30,18 @@ development — backend-first, one concept at a time, code written by hand.
    │           │
    │           │   3. JS calls the API       ┌──────────────────┐
    │           │ ──────────────────────────► │ Uvicorn+FastAPI  │  ──►  🗄️ SQLite
-   │           │   4. JSON                   │  localhost:8000  │  ◄──   database.db
-   │           │ ◄────────────────────────── │    BACKEND       │
+   │           │   4. JSON                   │  localhost:8000  │
+   │           │ ◄────────────────────────── │    BACKEND       │  ◄──  database.db
    └───────────┘                             └──────────────────┘
 ```
 
 Frontend = the looks. Backend = the brains. **The database = the memory** (persists to disk).
+
+> **Two servers in dev, one in production.** The diagram above is `make dev` — Vite serves the
+> UI, Uvicorn serves the API, and the browser talks to both. For a production-style run,
+> `make start` collapses this to **one** server: Uvicorn serves the *built* UI **and** the API on
+> `:8000`. The API lives under `/api`; the UI owns every other path — so the same code runs both
+> ways, just with fewer moving parts.
 
 ---
 
@@ -53,6 +59,7 @@ Frontend = the looks. Backend = the brains. **The database = the memory** (persi
 | Auth — tokens | **PyJWT** | Signed JWT access tokens (OAuth2 password flow) |
 | Migrations | **Alembic** | Versioned, reversible schema changes |
 | Python manager | **uv** | Deps + virtualenv |
+| Task runner | **make** | One entrance for the monorepo — `make dev` / `start` / `test` |
 | Frontend | **React + Vite** | Modern, fast dev server + JSX compiler |
 | Language | **Plain JavaScript**, **plain CSS** | Kept minimal on purpose |
 | Data fetching | **fetch()** | Manual on purpose — see the moving parts |
@@ -66,6 +73,7 @@ A **monorepo**: two independent, self-contained subprojects side by side.
 ```
 fastapi_react_tutorial/       ← git repo (the monorepo root)
 ├── README.md  .gitignore
+├── Makefile                  ← universal entrance: make install / dev / start / test / clean
 ├── docs/                     ← per-step tutorial notes (the "why" + diagrams)
 │
 ├── backend/                  ← self-contained PYTHON project  ← main focus
@@ -81,7 +89,7 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 │   │   └── test_main.py      ← pytest suite (TestClient + in-memory DB)
 │   └── app/
 │       ├── __init__.py
-│       ├── main.py           ← wiring: middleware, include_router, startup
+│       ├── main.py           ← wiring: CORS, /api routes, startup, single-server UI serving
 │       ├── config.py         ← Settings (pydantic-settings) ← reads .env
 │       ├── model.py          ← SQLModel models (Contact, Note, User)
 │       ├── database.py       ← engine, session (get_session / SessionDep)
@@ -93,9 +101,10 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 │
 └── frontend/                 ← self-contained JS project (React + Vite)
     ├── package.json  node_modules/  .gitignore
+    ├── dist/                 ← built UI (gitignored) — what the backend serves in single-server mode
     └── src/
         ├── App.jsx           ← the route table (<Routes>)
-        ├── ContactList.jsx   ← list view
+        ├── ContactList.jsx   ← list view      (calls the API under /api)
         └── ContactDetail.jsx ← detail view (one contact + its notes)
 ```
 
@@ -103,20 +112,53 @@ fastapi_react_tutorial/       ← git repo (the monorepo root)
 
 ## 🚀 Run it
 
-Two servers = two terminals, each *inside* its own subproject.
+One entrance for the whole monorepo: a root **`Makefile`**. Run `make` (or `make help`) to
+list every target.
+
+```bash
+make install   # backend deps (uv) + frontend deps (npm)
+make dev       # both servers, hot-reload: API :8000 + UI :5173   (one Ctrl-C stops both)
+make start     # build the UI, then serve API + UI from ONE server → http://127.0.0.1:8000
+make test      # backend pytest + ruff, then a frontend build check
+make build     # just build the frontend → frontend/dist
+make clean     # remove build artifacts and caches
+```
+
+**First run** — set up the backend's secrets once (the app **fails fast** without them):
+```bash
+cd backend && cp .env.example .env      # then fill in SECRET_KEY (generate: openssl rand -hex 32)
+```
+The schema is created automatically at startup, so `make dev` / `make start` just work on a
+fresh checkout. (Alembic migrations are for *evolving* the schema later — see below.)
+
+### Two ways to run — and why
+
+|  | `make dev` (development) | `make start` (production-style) |
+|---|---|---|
+| Processes | **two** — Vite `:5173` + Uvicorn `:8000` | **one** — Uvicorn serves both on `:8000` |
+| Frontend | live, hot-reloading from source | prebuilt static files in `frontend/dist` |
+| API calls | browser → `:8000/api`, **cross-origin** (CORS) | same-origin `/api` — no CORS needed |
+| Reach for it when | writing code (instant reload) | a realistic single-origin deployment |
+
+In `make start`, Uvicorn hands back the built React app for any non-`/api` path — so a refresh
+on a real URL like `/contacts/1` still lands on the app (**the API owns `/api/…`, the UI owns
+everything else**). That split is why one server can serve both without their routes colliding.
+
+### The long way (what `make` runs for you)
+
+<details>
+<summary>Prefer two terminals by hand? Same thing, unwrapped.</summary>
 
 **Backend** — terminal 1:
 ```bash
 cd backend
-uv run alembic upgrade head          # create/upgrade the DB schema (first run + after model changes)
+uv run alembic upgrade head          # create/upgrade the schema (or just let startup create_all do it)
 uv run uvicorn app.main:app --reload
 ```
-→ http://127.0.0.1:8000  ·  auto-docs at http://127.0.0.1:8000/docs
+→ API at http://127.0.0.1:8000/api  ·  auto-docs at http://127.0.0.1:8000/docs
 
-> First run: `cp .env.example .env`, then fill in `SECRET_KEY` (generate one with
-> `openssl rand -hex 32`). The app **fails fast** if a required value is missing.
-> Coming from a pre-Alembic checkout? Your old `database.db` predates the migration
-> history — simplest is to delete it and re-run (it only ever held seed data).
+> Coming from a pre-Alembic checkout? Your old `database.db` predates the migration history —
+> simplest is to delete it and re-run (it only ever held seed data).
 
 **Frontend** — terminal 2:
 ```bash
@@ -125,15 +167,16 @@ npm run dev
 ```
 → http://localhost:5173
 
-**Tests** (backend):
+</details>
+
+**Tests** (backend) — `make test`, or directly:
 ```bash
 cd backend
 uv run pytest
 ```
-> Tests import the app, so a **valid** `.env` must exist first — do the first-run setup
-> above (`SECRET_KEY` filled in; an empty one fails validation at import). But the tests
-> themselves run entirely on a throwaway in-memory DB: no migrations, and `database.db`
-> is never touched.
+> Tests import the app, so a **valid** `.env` must exist first (an empty `SECRET_KEY` fails
+> validation at import). The tests themselves run entirely on a throwaway in-memory DB: no
+> migrations, and `database.db` is never touched.
 
 ---
 
@@ -220,8 +263,9 @@ uv run pytest
 - [x] **React Router** — `BrowserRouter` / `Routes` / `Route` / `Link` / `useParams` (URL-driven views)
 
 **🎉 The guided build is complete** — every planned concept is checked off. Natural next
-extensions, whenever you want them: wire `phone` into the API, protect the contacts routes behind
-`CurrentUserDep`, add refresh tokens, or point the backend at PostgreSQL.
+extensions, whenever you want them: surface `phone` in the UI (the API already stores and
+returns it), protect the contacts routes behind `CurrentUserDep`, add refresh tokens, or point
+the backend at PostgreSQL.
 
 ---
 

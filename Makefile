@@ -1,4 +1,4 @@
-# Universal entry point for the rag_system monorepo (backend + frontend).
+# Universal entry point for the fastapi_react_tutorial monorepo (backend + frontend).
 # Run `make` (or `make help`) to see the targets.
 SHELL := /bin/bash
 
@@ -16,7 +16,8 @@ install:
 	cd backend && uv sync
 	cd frontend && npm install
 
-# Development: both servers, one command, one Ctrl-C. Vite proxies /api → :8000.
+# Development: both servers, one command, one Ctrl-C. The browser loads the app from
+# Vite (:5173) and the app calls the API at :8000/api cross-origin (handled by CORS).
 dev:
 	@echo "backend  → http://127.0.0.1:8000"
 	@echo "frontend → http://localhost:5173"
