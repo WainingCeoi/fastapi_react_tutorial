@@ -2,12 +2,13 @@
 # Run `make` (or `make help`) to see the targets.
 SHELL := /bin/bash
 
-.PHONY: help install dev backend frontend build start test clean
+.PHONY: help install dev backend frontend build start host test clean
 
 help:
 	@echo "make install   install backend (uv) + frontend (npm) dependencies"
 	@echo "make dev       run backend (:8000) + frontend (:5173) together, hot-reload"
 	@echo "make start     build the frontend, then serve API + UI from ONE server (:8000)"
+	@echo "make host      like start, but bound to the LAN → http://<this-machine>.local:<port>"
 	@echo "make build     build the frontend for production (frontend/dist)"
 	@echo "make test      backend tests + ruff + a frontend build check"
 	@echo "make clean     remove build artifacts and caches"
@@ -30,6 +31,13 @@ dev:
 start: build
 	@echo "serving API + UI → http://127.0.0.1:8000"
 	cd backend && uv run uvicorn app.main:app
+
+# LAN host: like `start`, but the launcher binds 0.0.0.0 (all interfaces) so other
+# devices on the same Wi-Fi can reach it, auto-picks a free port, and prints the
+# machine's real <name>.local URL. Override HOST=127.0.0.1 (local only) or PORT=8080.
+# `--no-sync` so just running the host never rewrites uv.lock.
+host: build
+	cd backend && uv run --no-sync python host.py
 
 build:
 	cd frontend && npm run build

@@ -119,6 +119,7 @@ list every target.
 make install   # backend deps (uv) + frontend deps (npm)
 make dev       # both servers, hot-reload: API :8000 + UI :5173   (one Ctrl-C stops both)
 make start     # build the UI, then serve API + UI from ONE server → http://127.0.0.1:8000
+make host      # like start, but on the LAN → http://<this-machine>.local:<port> (see below)
 make test      # backend pytest + ruff, then a frontend build check
 make build     # just build the frontend → frontend/dist
 make clean     # remove build artifacts and caches
@@ -143,6 +144,46 @@ fresh checkout. (Alembic migrations are for *evolving* the schema later — see 
 In `make start`, Uvicorn hands back the built React app for any non-`/api` path — so a refresh
 on a real URL like `/contacts/1` still lands on the app (**the API owns `/api/…`, the UI owns
 everything else**). That split is why one server can serve both without their routes colliding.
+
+### Share it on your Wi-Fi — `make host`
+
+`make start` only listens on `127.0.0.1` (this machine). **`make host`** is the same single-origin
+build, but bound to **`0.0.0.0`** (every interface) so your phone or another laptop on the same
+network can open it — no IPs to look up:
+
+```bash
+make host
+#   • this machine : http://localhost:8000
+#   • other devices: http://<your-machine>.local:8000   ← open this on your phone
+#   • or via IP    : http://192.168.x.x:8000
+```
+
+- **The `.local` name is read at runtime** (`scutil --get LocalHostName` on macOS, the hostname
+  via avahi on Linux) — nothing is hardcoded, so it's correct on whatever machine runs it.
+- **Auto-port:** if `8000` is busy it walks up (`8001`, `8002`, …) and prints the URL it actually
+  got.
+- **One process, one worker** — the app seeds/creates its schema at startup, so a single worker
+  avoids double-running that.
+- **Overrides:** `HOST=127.0.0.1 make host` (local only, opt back out of the LAN) · `PORT=8080 make host`
+  (different base port).
+
+> **Why not just use `make dev` on the LAN?** Never expose a hot-reload dev server to other
+> machines. `make host` serves the *built* UI, no file-watcher, no reload.
+
+#### ⚠️ Before you expose it — LAN ≠ localhost
+
+Binding `0.0.0.0` means **everyone on the Wi-Fi can reach the app**. Only do it on a network you
+trust, and mind these:
+
+- **`SECRET_KEY` must be a real value.** It signs the JWT login tokens. The app already refuses to
+  boot without a 32+ char key (`min_length=32`), so this is enforced — just don't reuse a throwaway.
+- **Plain HTTP, on purpose.** No TLS is set up. That's fine for a trusted LAN, but note: an
+  **installable PWA / service worker needs a secure context (HTTPS)** and won't work over plain
+  `http://…`. Adding a LAN certificate means trusting a local CA on every device — out of scope here.
+- **Not applicable to this app (but classic foot-guns worth knowing):** frameworks that put the
+  session in a **`Secure` cookie** silently drop it over plain HTTP → logins that "work" but never
+  stick. This app is immune — it uses **`Authorization: Bearer` header tokens, no cookies**. There's
+  also **no default admin password** to change (users self-register).
 
 ### The long way (what `make` runs for you)
 

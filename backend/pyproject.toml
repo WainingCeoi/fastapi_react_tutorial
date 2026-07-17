@@ -33,11 +33,3 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "N"]
-
-[tool.ruff.lint.per-file-ignores]
-# Entry points prepend the src dir to sys.path before importing the package,
-# so their imports intentionally follow that bootstrap (E402).
-"src/rag/bench_ingest.py" = ["E402"]
-# These modules hold verbatim LLM prompt strings that must not be reflowed (E501).
-"src/rag/ingestion/contextual.py" = ["E501"]
-"src/rag/generation/generator.py" = ["E501"]
